@@ -29,6 +29,17 @@ def acc_over_time(data, days=7):
     plt.show()
 
 
+def activities_per_student(data):
+    counts = {}
+    for x in data:
+        if x['user'] not in counts.keys():
+            counts[x['user']] = 0
+        counts[x['user']] += 1
+    print('Mean num. activities per user: %s' % np.mean(counts.values()))
+    sns.distplot(list(counts.values()))
+    plt.show()
+
+
 def correlation(data, x, y):
     """View the correlation between two features via a scatterplot."""
     plt.scatter(
@@ -63,4 +74,44 @@ def mean_accs(data, attr):
     sns.distplot([np.mean(v) for v in accs.values()])
     plt.xlabel('mean accuracy')
     plt.ylabel('density')
+    plt.show()
+
+
+def progress_and_accuracy(data):
+    accs = {}
+    for x in data:
+        if x['unit_module'] not in accs.keys():
+            accs[x['unit_module']] = []
+        accs[x['unit_module']].append(x['accuracy'])
+    modules_accs = list(sorted([(k, np.mean(v)) for k, v in accs.items()]))
+    plt.plot([x[0] for x in modules_accs], [x[1] for x in modules_accs])
+    plt.xlabel('progress')
+    plt.ylabel('mean accuracy')
+    plt.title('mean accuracy as a function of progress')
+    plt.show()
+
+
+def student_word_acc_over_time(data):
+    accs = []
+    times = []
+    current_bin = []
+    current_timestamp = None
+
+    # somehow extract the data here
+
+    for x in sorted(data, key=lambda x: x['timestamp']):
+        if current_timestamp is None:
+            current_timestamp = x['timestamp']
+        current_bin.append(x['accuracy'])
+        if util.day_diff(current_timestamp, x['timestamp']) > days:
+            accs.append(np.mean(current_bin))
+            times.append(util.to_str(current_timestamp))
+            current_bin = []
+            current_timestamp = None
+    plt.figure(figsize=(14, 4))
+    plt.plot(range(len(accs)), accs)
+    plt.xticks(list(range(len(times))), times)
+    plt.xlabel('time')
+    plt.ylabel('mean accuracy')
+    plt.title('Evolution of mean accuracy over time')
     plt.show()

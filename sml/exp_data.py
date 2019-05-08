@@ -6,9 +6,11 @@ from sml import util
 
 
 def load(just_accs=False):
-    file_name = 'acc_data.json' if just_accs else 'data.json'
-    with open(file_name) as f:
-        return json.loads(f.read())
+    with open('data.json') as f:
+        data = json.loads(f.read())
+    if just_accs:
+        data = filter_accs(data)
+    return data
 
 
 def filter_accs(data):

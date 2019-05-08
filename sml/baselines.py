@@ -1,7 +1,6 @@
 """Code for reproducing the baselines."""
 from sklearn import metrics, linear_model, svm
 import numpy as np
-from sml import exp_data as ex
 
 
 def eval_linear_regression(X_train, y_train, X_test, y_test):
@@ -34,25 +33,24 @@ def get_X_y(data):
 
     The design matrix is composed of a concatenation of one-hot vectors for each
     of the independent variables we have chosen, being
-      - teacher
-      - class
-      - level
-      - unit_module
+      - teacher (one-hot)
+      - class (one-hot)
+      - level (one-hot)
+      - unit_module (ordinal)
     """
     n_teachers = max([x['teacher'] for x in data]) + 1
     n_classes = max([x['class'] for x in data]) + 1
     n_levels = max([x['level'] for x in data]) + 1
-    n_modules = max([x['unit_module'] for x in data]) + 1
-    n_feats = n_teachers + n_classes + n_levels + n_modules
-    X = np.zeros((len(data), n_feats + 1))
+    n_feats = n_teachers + n_classes + n_levels + 2  # bias and unit_module
+    X = np.zeros((len(data), n_feats))
     y = np.array([x['accuracy'] for x in data])
     print('Generating one-hot vectors')
     for ix, x in enumerate(data):
+        X[ix, 0] = 1  # bias term - also why not subtracting 1 for class_ix
         teacher_ix = x['teacher']
         class_ix = n_teachers + x['class']
         level_ix = n_teachers + n_classes - 1 + x['level']
         module_ix = n_teachers + n_classes + n_levels - 2 + x['unit_module']
-        X[ix, 0] = 1  # bias term - also why not subtracting 1 for class_ix
         X[ix, teacher_ix] = 1
         X[ix, class_ix] = 1
         X[ix, level_ix] = 1
