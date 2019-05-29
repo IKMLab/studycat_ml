@@ -12,16 +12,23 @@ def eval_linear_regression(X_train, y_train, X_test, y_test):
 
 
 def eval_mean_acc(data):
-    mean_acc = np.mean([x['accuracy'] for x in data if x['subset'] == 'train'])
-    y_pred = [mean_acc] * 10000
     y_test = [x['accuracy'] for x in data if x['subset'] == 'test']
+    mean_acc = np.mean([x['accuracy'] for x in data if x['subset'] == 'train'])
+    y_pred = [mean_acc] * len(y_test)
     mse = metrics.mean_squared_error(y_test, y_pred)
     print('Predicting with mean acc in training set yields '
           '%s rmse on the test set.' % np.sqrt(mse))
 
 
+def eval_100(data):
+    y_test = [x['accuracy'] for x in data if x['subset'] == 'test']
+    y_pred = [1.] * len(y_test)
+    mse = metrics.mean_squared_error(y_test, y_pred)
+    print('Predicting 1. yields %s rmse on the test set.' % np.sqrt(mse))
+
+
 def eval_svr(X_train, y_train, X_test, y_test):
-    model = svm.SVR()
+    model = svm.SVR(gamma='scale')
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     mse = metrics.mean_squared_error(y_pred, y_test)
@@ -36,12 +43,14 @@ def get_X_y(data):
       - teacher (one-hot)
       - class (one-hot)
       - level (one-hot)
-      - unit_module (ordinal)
+      - unit_module (one-hot)
+      - is_preview (boolean)
     """
     n_teachers = max([x['teacher'] for x in data]) + 1
     n_classes = max([x['class'] for x in data]) + 1
     n_levels = max([x['level'] for x in data]) + 1
-    n_feats = n_teachers + n_classes + n_levels + 2  # bias and unit_module
+    n_modules = max([x['unit_module'] for x in data]) + 1
+    n_feats = n_teachers + n_classes + n_levels + n_modules + 2  # bias, preview
     X = np.zeros((len(data), n_feats))
     y = np.array([x['accuracy'] for x in data])
     print('Generating one-hot vectors')
@@ -55,6 +64,8 @@ def get_X_y(data):
         X[ix, class_ix] = 1
         X[ix, level_ix] = 1
         X[ix, module_ix] = 1
+        if x['is_preview']:
+            X[ix, -1] = 1
 
     # splits
     print('Determining splits...')

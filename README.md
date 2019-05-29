@@ -23,3 +23,9 @@ version or hit "Watch" above.
 
 If you have any problems or questions please open a new issue in
 this repository. 
+
+## Help
+
+We discovered a competition at the NAACL conference from last year,
+from Duolingo, that has some overlap with our task. See the "Tips 
+and Related Work" section [here](http://sharedtask.duolingo.com/).
